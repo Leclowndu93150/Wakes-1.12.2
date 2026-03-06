@@ -36,6 +36,8 @@ public class WakesUtils {
         }
     }
 
+    private static int paddleLogCooldown = 0;
+
     public static void spawnPaddleSplashCloudParticle(World world, EntityBoat boat) {
         for (int i = 0; i < 2; i++) {
             if (boat.getPaddleState(i)) {
@@ -45,6 +47,12 @@ public class WakesUtils {
                     double x = boat.posX + (i == 1 ? -rot.z : rot.z);
                     double z = boat.posZ + (i == 1 ? rot.x : -rot.x);
                     float wakeHeight = ((ProducesWake) boat).wakes$wakeHeight();
+                    if (paddleLogCooldown <= 0) {
+                        com.leclowndu93150.wakes.WakesMod.LOGGER.info("[PADDLE] boatY={} wakeHeight={} fluidLevel={}",
+                            String.format("%.3f", boat.posY), String.format("%.3f", wakeHeight), String.format("%.3f", getFluidLevel(world, boat)));
+                        paddleLogCooldown = 40;
+                    }
+                    paddleLogCooldown--;
                     Minecraft.getMinecraft().effectRenderer.addEffect(
                             new SplashCloudParticle(world, x, wakeHeight, z, 0, 0, 0));
                 }
@@ -240,7 +248,7 @@ public class WakesUtils {
                 }
             }
             if (!(f < 1.0f)) continue;
-            return blockPos.getY() + f;
+            return blockPos.getY() + 1 - f;
         }
         return maxY + 1;
     }
@@ -248,6 +256,9 @@ public class WakesUtils {
     public static class SplashPlaneSpawner {
         public static void spawn(World world, Entity owner) {
             float wakeY = getFluidLevel(world, owner);
+            com.leclowndu93150.wakes.WakesMod.LOGGER.info("[SPLASH_PLANE_SPAWN] ownerY={} fluidLevel={} wakeHeight={}",
+                String.format("%.3f", owner.posY), String.format("%.3f", wakeY),
+                String.format("%.3f", ((ProducesWake) owner).wakes$wakeHeight()));
             com.leclowndu93150.wakes.particle.custom.SplashPlaneParticle particle =
                     new com.leclowndu93150.wakes.particle.custom.SplashPlaneParticle(world, owner.posX, wakeY, owner.posZ);
             particle.owner = owner;

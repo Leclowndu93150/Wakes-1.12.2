@@ -78,6 +78,7 @@ public class SplashPlaneRenderer {
             return;
         }
 
+        GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
         GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GlStateManager.disableTexture2D();
@@ -116,6 +117,7 @@ public class SplashPlaneRenderer {
         GlStateManager.enableTexture2D();
         GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GlStateManager.popMatrix();
+        GlStateManager.popAttrib();
     }
 
     private static void renderSurface() {

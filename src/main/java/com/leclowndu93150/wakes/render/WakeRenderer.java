@@ -58,6 +58,7 @@ public class WakeRenderer {
         int n = 0;
         long tRendering = System.nanoTime();
 
+        GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
         GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GlStateManager.disableTexture2D();
@@ -86,6 +87,7 @@ public class WakeRenderer {
         GlStateManager.enableTexture2D();
         GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GlStateManager.popMatrix();
+        GlStateManager.popAttrib();
 
         WakesDebugInfo.renderingTime.add(System.nanoTime() - tRendering);
         WakesDebugInfo.quadsRendered = n;

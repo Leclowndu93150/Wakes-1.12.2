@@ -25,6 +25,7 @@ public class SplashPlaneParticle extends Particle {
     public float prevYaw;
 
     Vec3d direction = Vec3d.ZERO;
+    private int logCooldown = 0;
 
     private final SimulationNode simulationNode = new SimulationNode.SplashPlaneSimulation();
 
@@ -101,6 +102,16 @@ public class SplashPlaneParticle extends Particle {
         Vec3d planePos = new Vec3d(this.owner.posX, this.owner.posY, this.owner.posZ).add(planeOffset);
         this.setPosition(planePos.x, wakeProducer.wakes$wakeHeight(), planePos.z);
 
+        if (logCooldown <= 0) {
+            com.leclowndu93150.wakes.WakesMod.LOGGER.info("[SPLASH_PLANE_TICK] ownerY={} wakeHeight={} planeY={} posY={}",
+                String.format("%.3f", this.owner.posY),
+                String.format("%.3f", wakeProducer.wakes$wakeHeight()),
+                String.format("%.3f", planePos.y),
+                String.format("%.3f", this.posY));
+            logCooldown = 40;
+        }
+        logCooldown--;
+
         double speed = vel.length();
         if (speed / WakesConfig.maxSplashPlaneVelocity > 0.3f && WakesConfig.spawnParticles) {
             java.util.Random random = new java.util.Random();
@@ -112,10 +123,11 @@ public class SplashPlaneParticle extends Particle {
             double vx = -Math.sin(particleYaw) * Math.cos(pitchRad) * vScale;
             double vy = Math.sin(pitchRad) * vScale;
             double vz = Math.cos(particleYaw) * Math.cos(pitchRad) * vScale;
+            double splashY = this.posY + 0.1;
             Minecraft.getMinecraft().effectRenderer.addEffect(
-                    new SplashCloudParticle(world, particlePos.x + particleOffset.x, this.posY, particlePos.z + particleOffset.z, vx, vy, vz));
+                    new SplashCloudParticle(world, particlePos.x + particleOffset.x, splashY, particlePos.z + particleOffset.z, vx, vy, vz));
             Minecraft.getMinecraft().effectRenderer.addEffect(
-                    new SplashCloudParticle(world, particlePos.x - particleOffset.x, this.posY, particlePos.z - particleOffset.z, vx, vy, vz));
+                    new SplashCloudParticle(world, particlePos.x - particleOffset.x, splashY, particlePos.z - particleOffset.z, vx, vy, vz));
         }
 
         this.simulationNode.tick((float) wakeProducer.wakes$getHorizontalVelocity(), null, null, null, null);
@@ -139,7 +151,9 @@ public class SplashPlaneParticle extends Particle {
         int light = world.getCombinedLight(this.owner.getPosition(), 0);
         int skyLight = (light >> 20) & 0xF;
         int blockLight = (light >> 4) & 0xF;
-        float brightness = Math.max(skyLight, blockLight) / 15f;
+        float sunBrightness = world.getSunBrightness(1.0f);
+        float effectiveSkyLight = skyLight * sunBrightness;
+        float brightness = Math.max(effectiveSkyLight, blockLight) / 15f;
         int b = (int) (brightness * 255);
         int lightCol = 0xFF000000 | (b << 16) | (b << 8) | b;
         float opacity = (float) WakesConfig.wakeOpacity * 0.9f;

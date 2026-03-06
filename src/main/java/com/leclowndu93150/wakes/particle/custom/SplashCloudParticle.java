@@ -12,7 +12,6 @@ import net.minecraft.world.World;
 
 public class SplashCloudParticle extends Particle {
     private final boolean isFromPaddles;
-    private final float oSize;
 
     public SplashCloudParticle(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z);
@@ -20,21 +19,13 @@ public class SplashCloudParticle extends Particle {
         this.motionY = velocityY;
         this.motionZ = velocityZ;
 
-        this.posY = y + 0.1;
         this.prevPosX = x;
-        this.prevPosY = this.posY;
+        this.prevPosY = y;
         this.prevPosZ = z;
 
         this.particleMaxAge = (int) (WakeNode.maxAge * 1.5);
         this.isFromPaddles = velocityX == 0 && velocityZ == 0;
-        this.particleScale = isFromPaddles ? 3.0f : 1.5f;
-        this.oSize = this.particleScale;
-
-        float grey = 1.0F - (float) (Math.random() * 0.15);
-        this.particleRed = grey;
-        this.particleGreen = grey;
-        this.particleBlue = grey;
-        this.particleAlpha = 0.8f;
+        this.particleScale = isFromPaddles ? this.particleScale * 2 : 3.0f;
 
         this.particleTexture = SplashCloudSprites.getRandomSprite();
         this.canCollide = false;
@@ -49,14 +40,18 @@ public class SplashCloudParticle extends Particle {
                 this.setExpired();
                 return;
             }
-            this.particleAlpha = 0.8f * (1f - (float) this.particleAge / this.particleMaxAge);
+            if (this.particleAge <= 20) {
+                this.particleAlpha = 1f - (float) this.particleAge / 20f;
+            }
             return;
         } else {
             if (this.particleAge > particleMaxAge / 3) {
                 this.setExpired();
                 return;
             }
-            this.particleAlpha = 0.8f * (1f - (float) this.particleAge / (this.particleMaxAge / 3f));
+            if (this.particleAge <= 20) {
+                this.particleAlpha = 1f - (float) this.particleAge / 20f;
+            }
         }
 
         this.prevPosX = this.posX;
@@ -80,13 +75,6 @@ public class SplashCloudParticle extends Particle {
         this.posY += motionY;
         this.posZ += motionZ;
         this.setPosition(this.posX, this.posY, this.posZ);
-    }
-
-    @Override
-    public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotX, float rotZ, float rotYZ, float rotXY, float rotXZ) {
-        float age = ((float) this.particleAge + partialTicks) / (float) this.particleMaxAge;
-        this.particleScale = this.oSize * (1.0F - age * age * 0.5F);
-        super.renderParticle(buffer, entityIn, partialTicks, rotX, rotZ, rotYZ, rotXY, rotXZ);
     }
 
     @Override

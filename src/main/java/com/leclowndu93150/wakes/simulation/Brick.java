@@ -196,7 +196,9 @@ public class Brick {
                     int light = world.getCombinedLight(blockPos, 0);
                     int skyLight = (light >> 20) & 0xF;
                     int blockLight = (light >> 4) & 0xF;
-                    float brightness = Math.max(skyLight, blockLight) / 15f;
+                    float sunBrightness = world.getSunBrightness(1.0f);
+                    float effectiveSkyLight = skyLight * sunBrightness;
+                    float brightness = Math.max(effectiveSkyLight, blockLight) / 15f;
                     int b = (int) (brightness * 255);
                     lightCol = 0xFF000000 | (b << 16) | (b << 8) | b;
                     opacity = (float) ((-Math.pow(node.t, 2) + 1) * WakesConfig.wakeOpacity);
