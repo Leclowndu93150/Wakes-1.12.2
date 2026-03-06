@@ -2,6 +2,7 @@ package com.leclowndu93150.wakes.simulation;
 
 import com.leclowndu93150.wakes.config.WakesConfig;
 import com.leclowndu93150.wakes.debug.WakesDebugInfo;
+import com.leclowndu93150.wakes.utils.WaterTintUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -191,7 +192,7 @@ public class Brick {
                 float opacity = 0;
                 if (node != null) {
                     BlockPos blockPos = node.blockPos();
-                    fluidColor = BiomeColorHelper.getWaterColorAtPos(world, blockPos);
+                    fluidColor = WaterTintUtils.normalizeBiomeWaterColor(BiomeColorHelper.getWaterColorAtPos(world, blockPos));
                     int light = world.getCombinedLight(blockPos, 0);
                     int skyLight = (light >> 20) & 0xF;
                     int blockLight = (light >> 4) & 0xF;

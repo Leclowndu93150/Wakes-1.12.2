@@ -5,6 +5,7 @@ import com.leclowndu93150.wakes.config.enums.Resolution;
 import com.leclowndu93150.wakes.duck.ProducesWake;
 import com.leclowndu93150.wakes.particle.custom.SplashPlaneParticle;
 import com.leclowndu93150.wakes.simulation.WakeHandler;
+import com.leclowndu93150.wakes.utils.WaterTintUtils;
 import com.leclowndu93150.wakes.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -14,8 +15,11 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeColorHelper;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
@@ -104,9 +108,20 @@ public class SplashPlaneRenderer {
         float progress = (float) Math.min(1f, velocity / WakesConfig.maxSplashPlaneVelocity);
         float scalar = (float) (WakesConfig.splashPlaneScale * Math.sqrt(entity.width * Math.max(1f, progress) + 1) / 3f);
         GlStateManager.scale(scalar, scalar, scalar);
+        float tintR = 1f;
+        float tintG = 1f;
+        float tintB = 1f;
+        World world = entity.world;
+        if (world != null) {
+            BlockPos tintPos = entity.getPosition();
+            int waterColor = WaterTintUtils.normalizeBiomeWaterColor(BiomeColorHelper.getWaterColorAtPos(world, tintPos));
+            tintR = ((waterColor >> 16) & 0xFF) / 255f;
+            tintG = ((waterColor >> 8) & 0xFF) / 255f;
+            tintB = (waterColor & 0xFF) / 255f;
+        }
 
         wakeTextures.get(WakeHandler.resolution).loadTexture(splashPlane.imgBuffer);
-        renderSurface();
+        renderSurface(tintR, tintG, tintB);
 
         GlStateManager.depthMask(true);
         GlStateManager.enableAlpha();
@@ -118,12 +133,14 @@ public class SplashPlaneRenderer {
         GlStateManager.popMatrix();
     }
 
-    private static void renderSurface() {
+    private static void renderSurface(float tintR, float tintG, float tintB) {
         GlStateManager.disableCull();
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR);
+        GlStateManager.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
+        GlStateManager.color(tintR, tintG, tintB, 1f);
+        buffer.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
 
         for (int s = -1; s < 2; s++) {
             if (s == 0) continue;
@@ -133,12 +150,12 @@ public class SplashPlaneRenderer {
                                 s * (vertex.x * WakesConfig.splashPlaneWidth + WakesConfig.splashPlaneGap),
                                 vertex.z * WakesConfig.splashPlaneHeight,
                                 vertex.y * WakesConfig.splashPlaneDepth)
-                        .tex((float) vertex.x, (float) vertex.y)
-                        .color(1.0f, 1.0f, 1.0f, 1.0f).endVertex();
+                        .tex((float) vertex.x, (float) vertex.y).endVertex();
             }
         }
 
         tessellator.draw();
+        GlStateManager.color(1f, 1f, 1f, 1f);
         GlStateManager.enableCull();
     }
 

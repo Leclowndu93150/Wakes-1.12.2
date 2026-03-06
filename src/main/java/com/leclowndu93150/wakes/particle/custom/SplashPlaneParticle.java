@@ -4,6 +4,7 @@ import com.leclowndu93150.wakes.config.WakesConfig;
 import com.leclowndu93150.wakes.duck.ProducesWake;
 import com.leclowndu93150.wakes.simulation.SimulationNode;
 import com.leclowndu93150.wakes.simulation.WakeHandler;
+import com.leclowndu93150.wakes.utils.WaterTintUtils;
 import com.leclowndu93150.wakes.utils.WakesUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -130,7 +131,7 @@ public class SplashPlaneParticle extends Particle {
 
     public void populatePixels() {
         if (this.owner == null) return;
-        int fluidColor = BiomeColorHelper.getWaterColorAtPos(world, this.owner.getPosition());
+        int fluidColor = WaterTintUtils.normalizeBiomeWaterColor(BiomeColorHelper.getWaterColorAtPos(world, this.owner.getPosition()));
         int light = world.getCombinedLight(this.owner.getPosition(), 0);
         int skyLight = (light >> 20) & 0xF;
         int blockLight = (light >> 4) & 0xF;
