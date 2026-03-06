@@ -5,6 +5,7 @@ import com.leclowndu93150.wakes.debug.WakeDebugRenderer;
 import com.leclowndu93150.wakes.event.ChunkWakeCleanup;
 import com.leclowndu93150.wakes.event.WakeClientTicker;
 import com.leclowndu93150.wakes.event.WakeWorldTicker;
+import com.leclowndu93150.wakes.particle.SplashCloudSprites;
 import com.leclowndu93150.wakes.render.SplashPlaneRenderer;
 import com.leclowndu93150.wakes.render.WakeRenderer;
 import net.minecraftforge.common.MinecraftForge;
@@ -26,6 +27,7 @@ public class WakesMod {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         WakesConfig.init(event.getSuggestedConfigurationFile());
+        MinecraftForge.EVENT_BUS.register(new SplashCloudSprites());
         LOGGER.info("Wakes mod loaded for 1.12.2");
     }
 

@@ -6,7 +6,6 @@ import com.leclowndu93150.wakes.debug.WakesDebugInfo;
 import com.leclowndu93150.wakes.simulation.Brick;
 import com.leclowndu93150.wakes.simulation.WakeHandler;
 import com.leclowndu93150.wakes.simulation.WakeNode;
-import com.leclowndu93150.wakes.utils.WaterTintUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -15,9 +14,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeColorHelper;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
@@ -106,22 +102,9 @@ public class WakeRenderer {
         float px = (float) (brick.pos.x - cx);
         float py = (float) (brick.pos.y - cy + WakeNode.WATER_OFFSET);
         float pz = (float) (brick.pos.z - cz);
-        float tintR = 1f;
-        float tintG = 1f;
-        float tintB = 1f;
-        World world = Minecraft.getMinecraft().world;
-        if (world != null) {
-            BlockPos tintPos = new BlockPos(brick.pos.x + brick.dim * 0.5D, brick.pos.y, brick.pos.z + brick.dim * 0.5D);
-            int waterColor = WaterTintUtils.normalizeBiomeWaterColor(BiomeColorHelper.getWaterColorAtPos(world, tintPos));
-            tintR = ((waterColor >> 16) & 0xFF) / 255f;
-            tintG = ((waterColor >> 8) & 0xFF) / 255f;
-            tintB = (waterColor & 0xFF) / 255f;
-        }
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        GlStateManager.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
-        GlStateManager.color(tintR, tintG, tintB, 1f);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
         buffer.pos(px, py, pz)
@@ -134,7 +117,6 @@ public class WakeRenderer {
                 .tex(1, 0).endVertex();
 
         tessellator.draw();
-        GlStateManager.color(1f, 1f, 1f, 1f);
         GlStateManager.enableCull();
     }
 }

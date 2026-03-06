@@ -106,12 +106,16 @@ public class SplashPlaneParticle extends Particle {
             java.util.Random random = new java.util.Random();
             Vec3d particleOffset = new Vec3d(-direction.z, 0, direction.x).scale(random.nextDouble() * this.owner.width / 4);
             Vec3d particlePos = new Vec3d(this.owner.posX, this.owner.posY, this.owner.posZ).add(direction.scale(this.owner.width - 0.3));
-            world.spawnParticle(net.minecraft.util.EnumParticleTypes.WATER_SPLASH,
-                    particlePos.x + particleOffset.x, this.posY, particlePos.z + particleOffset.z,
-                    0, 0.1, 0);
-            world.spawnParticle(net.minecraft.util.EnumParticleTypes.WATER_SPLASH,
-                    particlePos.x - particleOffset.x, this.posY, particlePos.z - particleOffset.z,
-                    0, 0.1, 0);
+            double particleYaw = Math.toRadians(-this.yaw + 30 * (random.nextDouble() - 0.5));
+            double pitchRad = Math.toRadians(45 * random.nextDouble());
+            double vScale = 1.5 * speed;
+            double vx = -Math.sin(particleYaw) * Math.cos(pitchRad) * vScale;
+            double vy = Math.sin(pitchRad) * vScale;
+            double vz = Math.cos(particleYaw) * Math.cos(pitchRad) * vScale;
+            Minecraft.getMinecraft().effectRenderer.addEffect(
+                    new SplashCloudParticle(world, particlePos.x + particleOffset.x, this.posY, particlePos.z + particleOffset.z, vx, vy, vz));
+            Minecraft.getMinecraft().effectRenderer.addEffect(
+                    new SplashCloudParticle(world, particlePos.x - particleOffset.x, this.posY, particlePos.z - particleOffset.z, vx, vy, vz));
         }
 
         this.simulationNode.tick((float) wakeProducer.wakes$getHorizontalVelocity(), null, null, null, null);

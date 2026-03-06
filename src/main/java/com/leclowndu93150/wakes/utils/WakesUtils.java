@@ -4,6 +4,7 @@ import com.leclowndu93150.wakes.WakesMod;
 import com.leclowndu93150.wakes.config.WakesConfig;
 import com.leclowndu93150.wakes.config.enums.EffectSpawningRule;
 import com.leclowndu93150.wakes.duck.ProducesWake;
+import com.leclowndu93150.wakes.particle.custom.SplashCloudParticle;
 import com.leclowndu93150.wakes.simulation.WakeHandler;
 import com.leclowndu93150.wakes.simulation.WakeNode;
 import java.util.ArrayList;
@@ -44,8 +45,8 @@ public class WakesUtils {
                     double x = boat.posX + (i == 1 ? -rot.z : rot.z);
                     double z = boat.posZ + (i == 1 ? rot.x : -rot.x);
                     float wakeHeight = ((ProducesWake) boat).wakes$wakeHeight();
-                    world.spawnParticle(net.minecraft.util.EnumParticleTypes.WATER_SPLASH,
-                            x, wakeHeight, z, 0, 0, 0);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(
+                            new SplashCloudParticle(world, x, wakeHeight, z, 0, 0, 0));
                 }
             }
         }
@@ -246,8 +247,9 @@ public class WakesUtils {
 
     public static class SplashPlaneSpawner {
         public static void spawn(World world, Entity owner) {
+            float wakeY = getFluidLevel(world, owner);
             com.leclowndu93150.wakes.particle.custom.SplashPlaneParticle particle =
-                    new com.leclowndu93150.wakes.particle.custom.SplashPlaneParticle(world, owner.posX, owner.posY, owner.posZ);
+                    new com.leclowndu93150.wakes.particle.custom.SplashPlaneParticle(world, owner.posX, wakeY, owner.posZ);
             particle.owner = owner;
             particle.yaw = particle.prevYaw = owner.rotationYaw;
             ((ProducesWake) owner).wakes$setSplashPlane(particle);
