@@ -1,8 +1,10 @@
 package com.leclowndu93150.wakes.render;
 
+import com.leclowndu93150.wakes.WakesMod;
 import com.leclowndu93150.wakes.simulation.QuadTree;
 import com.leclowndu93150.wakes.simulation.WakeHandler;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -15,6 +17,8 @@ public class WakeTexture {
     public int glTexId;
     public final boolean isUsingBricks;
     private final int resolutionScaling;
+    private boolean warnedTextureInitError = false;
+    private boolean warnedTextureUploadError = false;
 
     public WakeTexture(int res, boolean useBricks) {
         this.res = res;
@@ -22,6 +26,8 @@ public class WakeTexture {
         this.isUsingBricks = useBricks;
         this.resolutionScaling = useBricks ? QuadTree.BRICK_WIDTH : 1;
 
+        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GlStateManager.enableTexture2D();
         GlStateManager.bindTexture(glTexId);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, 0);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MIN_LOD, 0);
@@ -33,9 +39,16 @@ public class WakeTexture {
 
         int dim = resolutionScaling * res;
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, dim, dim, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        int error = GL11.glGetError();
+        if (error != GL11.GL_NO_ERROR && !warnedTextureInitError) {
+            warnedTextureInitError = true;
+            WakesMod.LOGGER.warn("WakeTexture init GL error (texId={}, dim={}): 0x{}", glTexId, dim, Integer.toHexString(error));
+        }
     }
 
     public void loadTexture(ByteBuffer imgBuffer) {
+        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GlStateManager.enableTexture2D();
         GlStateManager.bindTexture(glTexId);
         GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
         GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
@@ -46,6 +59,11 @@ public class WakeTexture {
         imgBuffer.position(0);
         imgBuffer.limit(dim * dim * 4);
         GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, dim, dim, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, imgBuffer);
+        int error = GL11.glGetError();
+        if (error != GL11.GL_NO_ERROR && !warnedTextureUploadError) {
+            warnedTextureUploadError = true;
+            WakesMod.LOGGER.warn("WakeTexture upload GL error (texId={}, dim={}): 0x{}", glTexId, dim, Integer.toHexString(error));
+        }
         imgBuffer.clear();
     }
 }
